@@ -32,17 +32,29 @@ import com.muralis.apiproxy.domain.RequestVO;
 public class ProxyController {
 
 	private Logger logger = LoggerFactory.getLogger("API-PROXY");
-
+	
+	@Value("${server.servlet.context-path}")
+	private String contextPath;
+	@Value("${server.address}")
+	private String hostRequested;
+	@Value("${server.port}")
+	private Integer portRequested;
 	@Value("${server.redirect}")
 	private String hostToRedirect;
 	@Value("${server.port.redirect}")
 	private Integer portToRedirect;
-
+	
 	@GetMapping("**")
 	public @ResponseBody ResponseEntity<?> redirectTo(@Autowired HttpServletRequest req) {
 
 		HttpGet httpget = null;
 		try {
+			logger.info("server.servlet.context-path: " + contextPath);
+			logger.info("server.address             : " + hostRequested);
+			logger.info("server.port                : " + portRequested);
+			logger.info("server.redirect            : " + hostToRedirect);
+			logger.info("server.port.redirect       : " + portToRedirect);
+			
 			RequestVO requestVO = new RequestVO(req);
 
 			HttpClient httpclient = HttpClients.createDefault();
@@ -56,8 +68,7 @@ public class ProxyController {
 
 			// HttpHost proxy = new HttpHost("200.220.138.12", 80, "http");
 			// RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
-			// httpget.setConfig(config);
-
+			// httpget.setConfig(config);			
 			logger.info("GET              :" + req.getRequestURL());
 			logger.info("REDIRECT         :" + httpget.getURI().getAuthority() + httpget.getURI().getPath());
 			logger.info("QUERY PARAM      :" + httpget.getURI().getQuery());
