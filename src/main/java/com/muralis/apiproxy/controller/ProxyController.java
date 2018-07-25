@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.muralis.apiproxy.domain.HttpStatusVO;
 import com.muralis.apiproxy.domain.RequestVO;
 
 @RestController
@@ -75,13 +76,15 @@ public class ProxyController {
 			logger.info("QUERY PARAM JSON :\n"
 					+ new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(requestVO.getParams()));
 			HttpResponse response = httpclient.execute(httpget);
-			logger.info("STATUS  RESPONSE :" + response.getStatusLine());
-			JsonNode json = parseHttpEntityToJson(response.getEntity());
-			logger.info("CONTENT RESPONSE :\n"
-					+ new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(json));
-
-			return ResponseEntity.ok(json);
-
+			logger.info("STATUS  RESPONSE :" + response.getStatusLine().getStatusCode());
+			if(response.getStatusLine().getStatusCode() < 400) {
+				JsonNode json = parseHttpEntityToJson(response.getEntity());
+				logger.info("CONTENT RESPONSE :\n"
+						+ new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(json));
+				return ResponseEntity.ok(json);
+			}
+			HttpStatusVO status = new HttpStatusVO(response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+			return ResponseEntity.ok(status);
 		} catch (URISyntaxException | ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
